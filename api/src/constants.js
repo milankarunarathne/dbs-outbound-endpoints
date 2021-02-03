@@ -9,7 +9,7 @@ module.exports = {
     INTERNAL_SERVER_ERROR: 500,
   },
   FILE_DESTINATIONS: {
-    UPI: "upi",
-    NEFT: "neft",
+    UPI: 'upi',
+    NEFT: 'neft',
   },
 };

@@ -1,8 +1,7 @@
 const _ = require('lodash');
 const fs = require('fs');
 const constants = require('../constants');
-const { resolve } = require('path');
-const { reject } = require('lodash');
+
 class ACK2andACK3Service {
   constructor() {}
 
@@ -10,8 +9,6 @@ class ACK2andACK3Service {
     let paymentType = null;
     let transactionStatus = null;
     let ack = null;
-
-    new Promise((resolve, reject));
 
     if (_.isEmpty(reqBody)) {
       return {
