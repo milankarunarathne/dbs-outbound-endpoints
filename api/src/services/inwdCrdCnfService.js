@@ -1,11 +1,13 @@
-const _ = require('lodash');
 const fs = require('fs');
+const _ = require('lodash');
+const openpgp = require('openpgp');
+const path = require('path');
 const constants = require('../constants');
 
 class InwdCrdCnfService {
   constructor() {}
 
-  async inwardCreditConfirmation(reqBody) {
+  async inwardCreditConfirmation(encReqBody) {
     const paymentTypeCodetoPaymentType = {
       'INCOMING ACT': 'ACT',
       'INCOMING TT': 'TT',
@@ -17,6 +19,20 @@ class InwdCrdCnfService {
 
     let transactionType = null;
     let paymentType = null;
+
+    const publicKeyArmored = fs.readFileSync(path.join(__dirname, '../../../keys/senders-publicKey.asc'));
+    const privateKeyArmored = fs.readFileSync(path.join(__dirname, '../../../keys/recievers-privateKey.asc'));
+    const passphrase = ``;
+    const {
+      keys: [privateKey],
+    } = await openpgp.key.readArmored(privateKeyArmored);
+    const { data: reqBodyStr } = await openpgp.decrypt({
+      message: await openpgp.message.readArmored(encReqBody), // parse armored message
+      publicKeys: (await openpgp.key.readArmored(publicKeyArmored)).keys, // for verification (optional)
+      privateKeys: [privateKey], // for decryption
+    });
+
+    const reqBody = JSON.parse(reqBodyStr);
 
     if (_.isEmpty(reqBody)) {
       return {

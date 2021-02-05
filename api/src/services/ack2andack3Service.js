@@ -1,15 +1,31 @@
-const _ = require('lodash');
 const fs = require('fs');
+const _ = require('lodash');
+const openpgp = require('openpgp');
+const path = require('path');
 const constants = require('../constants');
 
 class ACK2andACK3Service {
   constructor() {}
 
-  async ack2andack3(reqBody) {
+  async ack2andack3(encReqBody) {
     let paymentType = null;
     let transactionStatus = null;
     let ack = null;
 
+    const publicKeyArmored = fs.readFileSync(path.join(__dirname, '../../../keys/senders-publicKey.asc'));
+    const privateKeyArmored = fs.readFileSync(path.join(__dirname, '../../../keys/recievers-privateKey.asc'));
+    const passphrase = ``;
+    const {
+      keys: [privateKey],
+    } = await openpgp.key.readArmored(privateKeyArmored);
+    const { data: reqBodyStr } = await openpgp.decrypt({
+      message: await openpgp.message.readArmored(encReqBody), // parse armored message
+      publicKeys: (await openpgp.key.readArmored(publicKeyArmored)).keys, // for verification (optional)
+      privateKeys: [privateKey], // for decryption
+    });
+
+    const reqBody = JSON.parse(reqBodyStr);
+    
     if (_.isEmpty(reqBody)) {
       return {
         status: constants.HTTP_STATUS_CODES.BAD_REQUEST,
@@ -99,7 +115,8 @@ class ACK2andACK3Service {
     }
 
     try {
-      fs.writeFileSync(`../public/${paymentType}-${ack}-${transactionStatus}-${currentTime}.txt`, JSON.stringify(reqBody), (err) => {});
+      let currentTime = new Date().toISOString();
+      fs.writeFileSync(`../public/Different-Response-Type-${currentTime}.txt`, JSON.stringify(reqBody), (err) => {});
       return {
         status: constants.HTTP_STATUS_CODES.OK,
         body: 'Success',
