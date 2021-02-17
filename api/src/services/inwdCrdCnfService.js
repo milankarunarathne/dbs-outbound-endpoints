@@ -26,11 +26,25 @@ class InwdCrdCnfService {
     const {
       keys: [privateKey],
     } = await openpgp.key.readArmored(privateKeyArmored);
-    const { data: reqBodyStr } = await openpgp.decrypt({
-      message: await openpgp.message.readArmored(encReqBody), // parse armored message
-      publicKeys: (await openpgp.key.readArmored(publicKeyArmored)).keys, // for verification (optional)
-      privateKeys: [privateKey], // for decryption
-    });
+    try {
+      const { data: reqBodyStr } = await openpgp.decrypt({
+        message: await openpgp.message.readArmored(encReqBody), // parse armored message
+        publicKeys: (await openpgp.key.readArmored(publicKeyArmored)).keys, // for verification (optional)
+        privateKeys: [privateKey], // for decryption
+      });
+    } catch (error) {
+      console.error('Error: ', error.message);
+      if (error.message === 'Misformed armored text') {
+        return {
+          status: constants.HTTP_STATUS_CODES.BAD_REQUEST,
+          body: 'Please send encrypted request body',
+        };
+      }
+      return {
+        status: constants.HTTP_STATUS_CODES.BAD_REQUEST,
+        body: 'Bad Request',
+      };
+    }
 
     const reqBody = JSON.parse(reqBodyStr);
 
