@@ -7,6 +7,13 @@ const constants = require('../constants');
 class ACK2andACK3Service {
   constructor() {}
 
+  async dummyget() {
+    return {
+      status: constants.HTTP_STATUS_CODES.OK,
+        body: 'Request is success',
+    }
+  }
+
   async ack2andack3(encReqBody) {
     let paymentType = null;
     let transactionStatus = null;

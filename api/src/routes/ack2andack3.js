@@ -9,4 +9,10 @@ router.post('', async (req, res) => {
   res.status(result.status).send(result.body);
 });
 
+router.get('', async (req, res) => {
+  const ack2andack3Service = new ACK2andACK3Service();
+  const result = await ack2andack3Service.dummyget();
+  res.status(result.status).send(result.body);
+});
+
 module.exports = { ack2andack3Router: router };
