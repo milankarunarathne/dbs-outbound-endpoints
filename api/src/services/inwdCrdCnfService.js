@@ -19,6 +19,7 @@ class InwdCrdCnfService {
 
     let transactionType = null;
     let paymentType = null;
+    let reqBodyStr = null;
 
     const publicKeyArmored = fs.readFileSync(path.join(__dirname, '../../../keys/senders-publicKey.asc'));
     const privateKeyArmored = fs.readFileSync(path.join(__dirname, '../../../keys/recievers-privateKey.asc'));
@@ -27,7 +28,7 @@ class InwdCrdCnfService {
       keys: [privateKey],
     } = await openpgp.key.readArmored(privateKeyArmored);
     try {
-      const { data: reqBodyStr } = await openpgp.decrypt({
+      reqBodyStr = await openpgp.decrypt({
         message: await openpgp.message.readArmored(encReqBody), // parse armored message
         publicKeys: (await openpgp.key.readArmored(publicKeyArmored)).keys, // for verification (optional)
         privateKeys: [privateKey], // for decryption
@@ -45,9 +46,7 @@ class InwdCrdCnfService {
         body: 'Bad Request',
       };
     }
-
-    const reqBody = JSON.parse(reqBodyStr);
-
+    const reqBody = JSON.parse(reqBodyStr.data);
     if (_.isEmpty(reqBody)) {
       return {
         status: constants.HTTP_STATUS_CODES.BAD_REQUEST,
